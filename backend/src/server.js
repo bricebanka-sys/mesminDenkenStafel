@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import notesRoutes from './routes/notesRoutes.js';
 import dotenv from 'dotenv';
+import path from 'path';
 import { connectDB } from './config/db.js';
 import rateLimiter from './middleware/rateLimiter.js';
 
@@ -44,6 +45,24 @@ app.use(rateLimiter);
 app.use("/api/notes", notesRoutes);
 
 
+
+// Bereitstellung der Frontend-Builds im Produktionsmodus
+
+const __dirname = path.resolve();
+
+// Configuration spécifique à la Production
+if (process.env.NODE_ENV === "production") {
+  // Définir le dossier 'dist' du frontend comme dossier statique
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  // Pour toute route qui n'est pas une API, renvoyer l'index.html du frontend
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../frontend", "dist", "index.html"));
+  });
+} else {
+  // En développement, on active le CORS car les domaines sont différents
+  app.use(cors());
+}
 // Démarrer le serveur.
 
 
